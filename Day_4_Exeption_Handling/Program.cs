@@ -128,6 +128,7 @@ class ActionsWithSubscriber
     {
         foreach (var subscriber in Program.list)
         {
+
             subscriber.serviceIsActive = true;
             subscriber.AddToBalance(-1500);
             if (!((subscriber.expirationDate - DateTime.Now).TotalDays >= 10))
@@ -136,7 +137,10 @@ class ActionsWithSubscriber
                 throw new RoamingException();
             subscriber.expirationDate = DateTime.Now.AddMonths(1);
             Console.WriteLine("Service is activated");
+            
+
         }
+
     }
 }
 class InvalidExpirationDate : Exception
@@ -222,10 +226,11 @@ class Program
         //Task 5
         for (int i = 0; i < 1000; i++)
         {
-            list.Add(new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1)));
+            list.Add(new Subscriber("096420414", 1000, false, false, DateTime.Now.AddMonths(1)));
         }
         Task task1 = new Task(ActionsWithSubscriber.activateServices);
         Task task2 = new Task(ActionsWithSubscriber.activateServices);
+        try { 
         task1.Start();
         task2.Start();
         try
@@ -233,6 +238,29 @@ class Program
             Task.WaitAll(task1, task2);
         }
         catch (Exception ex) { }
+        }catch (ServiceAlreadyActiveException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (InsufficientBalanceException e)
+        {
+            subscriber.serviceIsActive = false;
+            ActionsWithSubscriber.offerRefilBalance();
+            Console.WriteLine(e.Message);
+        }
+        catch (InvalidExpirationDate e)
+        {
+            subscriber.serviceIsActive = false;
+            subscriber.AddToBalance(1500);
+            ActionsWithSubscriber.offerExpandDate();
+            Console.WriteLine(e.Message);
+        }
+        catch (RoamingException e)
+        {
+            subscriber.serviceIsActive = false;
+            subscriber.AddToBalance(1500);
+            Console.WriteLine(e.Message);
+        }
         //lock (list)
         //{
         //    task1.Start();
