@@ -114,55 +114,86 @@ class ActionsWithSubscriber
     }
     public static bool activateService(ref Subscriber subscriber)
     {
-        subscriber.serviceIsActive = true;
-        subscriber.AddToBalance(-1500);
-        if (!((subscriber.expirationDate - DateTime.Now).TotalDays >= 10))
-            throw new InvalidExpirationDate();
-        if ((bool)subscriber.isInRoaming)
-            throw new RoamingException();
-        subscriber.expirationDate = DateTime.Now.AddMonths(1);
-        Console.WriteLine("Service is activated");
-        return true;
+        try 
+        { 
+            subscriber.serviceIsActive = true;
+            subscriber.AddToBalance(-1500);
+            if (!((subscriber.expirationDate - DateTime.Now).TotalDays >= 10))
+                throw new InvalidExpirationDate();
+            if ((bool)subscriber.isInRoaming)
+                throw new RoamingException();
+            subscriber.expirationDate = DateTime.Now.AddMonths(1);
+            Console.WriteLine("Service is activated");
+            return true;
+        }
+        catch (ServiceAlreadyActiveException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (InsufficientBalanceException e)
+        {
+            subscriber.serviceIsActive = false;
+            ActionsWithSubscriber.offerRefilBalance();
+            Console.WriteLine(e.Message);
+        }
+        catch (InvalidExpirationDate e)
+        {
+            subscriber.serviceIsActive = false;
+            subscriber.AddToBalance(1500);
+            ActionsWithSubscriber.offerExpandDate();
+            Console.WriteLine(e.Message);
+        }
+        catch (RoamingException e)
+        {
+            subscriber.serviceIsActive = false;
+            subscriber.AddToBalance(1500);
+            Console.WriteLine(e.Message);
+        }
+        return false;
     }
     public static void activateServices()
     {
-        foreach (var subscriber in Program.list)
+        lock (Program.list)
         {
-            try
+            foreach (var subscriber in Program.list)
             {
-                subscriber.serviceIsActive = true;
-                subscriber.AddToBalance(-1500);
-                if (!((subscriber.expirationDate - DateTime.Now).TotalDays >= 10))
-                    throw new InvalidExpirationDate();
-                if ((bool)subscriber.isInRoaming)
-                    throw new RoamingException();
-                subscriber.expirationDate = DateTime.Now.AddMonths(1);
-                Console.WriteLine("Service is activated");
-            }
-            catch (ServiceAlreadyActiveException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (InsufficientBalanceException e)
-            {
-                subscriber.serviceIsActive = false;
-                ActionsWithSubscriber.offerRefilBalance();
-                Console.WriteLine(e.Message);
-            }
-            catch (InvalidExpirationDate e)
-            {
-                subscriber.serviceIsActive = false;
-                subscriber.AddToBalance(1500);
-                ActionsWithSubscriber.offerExpandDate();
-                Console.WriteLine(e.Message);
-            }
-            catch (RoamingException e)
-            {
-                subscriber.serviceIsActive = false;
-                subscriber.AddToBalance(1500);
-                Console.WriteLine(e.Message);
+                try
+                {
+                    subscriber.serviceIsActive = true;
+                    subscriber.AddToBalance(-1500);
+                    if (!((subscriber.expirationDate - DateTime.Now).TotalDays >= 10))
+                        throw new InvalidExpirationDate();
+                    if ((bool)subscriber.isInRoaming)
+                        throw new RoamingException();
+                    subscriber.expirationDate = DateTime.Now.AddMonths(1);
+                    Console.WriteLine("Service is activated");
+                }
+                catch (ServiceAlreadyActiveException e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+                catch (InsufficientBalanceException e)
+                {
+                    subscriber.serviceIsActive = false;
+                    ActionsWithSubscriber.offerRefilBalance();
+                    Console.WriteLine(e.Message);
+                }
+                catch (InvalidExpirationDate e)
+                {
+                    subscriber.serviceIsActive = false;
+                    subscriber.AddToBalance(1500);
+                    ActionsWithSubscriber.offerExpandDate();
+                    Console.WriteLine(e.Message);
+                }
+                catch (RoamingException e)
+                {
+                    subscriber.serviceIsActive = false;
+                    subscriber.AddToBalance(1500);
+                    Console.WriteLine(e.Message);
+                }
             }
         }
+
 
     }
 }
@@ -217,34 +248,9 @@ class Program
         //}
 
         //Task 4
-        //var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
-        //try
-        //{
-        //    ActionsWithSubscriber.activateService(ref subscriber);
-        //}
-        //catch (ServiceAlreadyActiveException e)
-        //{
-        //    Console.WriteLine(e.Message);
-        //}
-        //catch (InsufficientBalanceException e)
-        //{
-        //    subscriber.serviceIsActive = false;
-        //    ActionsWithSubscriber.offerRefilBalance();
-        //    Console.WriteLine(e.Message);
-        //}
-        //catch (InvalidExpirationDate e)
-        //{
-        //    subscriber.serviceIsActive = false;
-        //    subscriber.AddToBalance(1500);
-        //    ActionsWithSubscriber.offerExpandDate();
-        //    Console.WriteLine(e.Message);
-        //}
-        //catch (RoamingException e)
-        //{
-        //    subscriber.serviceIsActive = false;
-        //    subscriber.AddToBalance(1500);
-        //    Console.WriteLine(e.Message);
-        //}
+        var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
+        ActionsWithSubscriber.activateService(ref subscriber);
+       
 
         //Task 5
         //for (int i = 0; i < 1000; i++)
@@ -260,15 +266,5 @@ class Program
         //    Task.WaitAll(task1, task2);
         //}
         //catch (Exception ex) { }
-        ////lock (list)
-        ////{
-        ////    task1.Start();
-        ////    task2.Start();
-        ////    try
-        ////    {
-        ////        Task.WaitAll(task1, task2);
-        ////    }
-        ////    catch (Exception ex) { }
-        ////}
     }
 }
