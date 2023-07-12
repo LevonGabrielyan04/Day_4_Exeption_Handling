@@ -50,8 +50,8 @@ class Subscriber //Task 3
 {
     public string phoneNumber { get; private set; }
     public int balance { get; private set; }
-    bool? roaming = null;
-    public bool? isInRoaming
+    bool roaming;
+    public bool isInRoaming
     {
         get { return roaming; }
         set
@@ -61,8 +61,8 @@ class Subscriber //Task 3
             roaming = value;
         }
     }
-    bool? service = null;
-    public bool? serviceIsActive
+    bool service;
+    public bool serviceIsActive
     {
         get { return service; }
         set
@@ -77,9 +77,9 @@ class Subscriber //Task 3
     {
         this.phoneNumber = phoneNumber;
         this.balance = balance;
-        this.isInRoaming = isInRoaming;
+        this.roaming = isInRoaming;
         this.expirationDate = expirationDate;
-        this.serviceIsActive = sa;
+        this.service = sa;
     }
     public void AddToBalance(int num)
     {
@@ -229,28 +229,28 @@ class Program
         //Console.WriteLine(Tasks.ReadAge());
 
         //Task 3
-        //var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
-        //try
-        //{ 
-        //    ActionsWithSubscriber.checkService(subscriber);
-        //}
-        //catch(InvalidExpirationDate e)
-        //{
-        //    ActionsWithSubscriber.offerExpandDate();
-        //}
-        //catch(InsufficientBalanceException e)
-        //{
-        //    ActionsWithSubscriber.offerRefilBalance();
-        //}
-        //catch (Exception e)
-        //{
-        //    Console.WriteLine(e.Message);
-        //}
+        var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
+        try
+        {
+            ActionsWithSubscriber.checkService(subscriber);
+        }
+        catch (InvalidExpirationDate e)
+        {
+            ActionsWithSubscriber.offerExpandDate();
+        }
+        catch (InsufficientBalanceException e)
+        {
+            ActionsWithSubscriber.offerRefilBalance();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
 
         //Task 4
-        var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
-        ActionsWithSubscriber.activateService(ref subscriber);
-       
+        //var subscriber = new Subscriber("096420414", 10000, false, false, DateTime.Now.AddMonths(1));
+        //ActionsWithSubscriber.activateService(ref subscriber);
+
 
         //Task 5
         //for (int i = 0; i < 1000; i++)
@@ -261,10 +261,6 @@ class Program
         //Task task2 = new Task(ActionsWithSubscriber.activateServices);
         //task1.Start();
         //task2.Start();
-        //try
-        //{
-        //    Task.WaitAll(task1, task2);
-        //}
-        //catch (Exception ex) { }
+        //Task.WaitAll(task1, task2);
     }
 }
